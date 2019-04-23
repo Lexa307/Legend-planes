@@ -9,7 +9,8 @@ let scene,renderer,camera,group,geometry,material,plane,light;
 //let can=true;
 
 let stage={
-	zero:function(){
+	idrequest:null,
+	zero:()=>{//to left swipe
 		let cnt=0;
 		let offeset=0;
 	for(let i=0; i<group.children.length;i++){
@@ -22,7 +23,7 @@ let stage={
 			TweenMax.to(group.children[i].position,1,{ease: Power2.easeOut,x:dest,delay:offeset});
 		}
 	},
-	first:function(){
+	first:()=>{//to right swipe
 		let cnt=0;
 		let offeset=0;
 	for(let i=0; i<group.children.length;i++){
@@ -39,8 +40,8 @@ let stage={
 
 };
 
-
-scene = new THREE.Scene();
+(function Init(){
+	scene = new THREE.Scene();
  camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 0.1, 1000 );
  group = new THREE.Group();
  renderer = new THREE.WebGLRenderer( { alpha: true,antialias:true } );
@@ -53,17 +54,32 @@ document.body.appendChild( renderer.domElement );
  geometry = new THREE.PlaneGeometry( 1.5, 7, 1 );
  material = new THREE.MeshStandardMaterial( {color: 0xD2AD75, side: THREE.DoubleSide, wireframe:false, metalness:1, emissive:0x463C31, transparent:true} );
  plane = new THREE.Mesh( geometry, material );
+ 
+  light = new THREE.PointLight();
+scene.add(light);
+// let pointLightHelper = new THREE.PointLightHelper( light );
+// scene.add( pointLightHelper );
+light.position.set(-87,136,164);
+
+camera.position.set(-75, -2.5, 50);
+//var size = 10000;
+//var divisions = 500;
+
+//var gridHelper = new THREE.GridHelper( size, divisions );
+//scene.add( gridHelper );
+newSecondaryGroup(0,0,-10);
+stage.zero();
+//let f =setTimeout(function(){stage.first();},5000);
+//let f1 =setTimeout(function(){stage.second();},15000);
+})();
+
 
 function randomFromTo(from,to){
 	return Math.floor(from+Math.random()*(to+1-from));
 }
 
 
- light = new THREE.PointLight();
-scene.add(light);
-// let pointLightHelper = new THREE.PointLightHelper( light );
-// scene.add( pointLightHelper );
-light.position.set(-87,136,164);
+
 
 
 function newSecondaryGroup(world_X,world_Z,world_Y){
@@ -80,19 +96,11 @@ function newSecondaryGroup(world_X,world_Z,world_Y){
 }
 
 
-camera.position.set(-75, -2.5, 50);
-//var size = 10000;
-//var divisions = 500;
 
-//var gridHelper = new THREE.GridHelper( size, divisions );
-//scene.add( gridHelper );
-newSecondaryGroup(0,0,-10);
-stage.zero();
-//let f =setTimeout(function(){stage.first();},5000);
-//let f1 =setTimeout(function(){stage.second();},15000);
 
 function animate() {
-	requestAnimationFrame( animate );
+	stage.idrequest = requestAnimationFrame( animate );
+
 	renderer.render( scene, camera );
 	//controls.update();
 	//if(can){
@@ -100,5 +108,17 @@ function animate() {
 	   	group.children[i].rotation.y+=group.children[i].amplitude;
 	}
 	//}
+}
+
+function stoprender(){
+
+	cancelAnimationFrame( stage.idrequest );//stop rendering process call this and clearscene() if planes will never render again
+}
+
+function clearscene(){
+	for(let i = group.children.length-1;i>0;i--){
+		 group.remove( group.children[i]); //to init again must run newSecondaryGroup(0,0,-10); animate(); stage.zero();
+	}
+	
 }
 animate();
